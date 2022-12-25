@@ -1,6 +1,8 @@
 # Taken from https://pimylifeup.com/raspberry-pi-distance-sensor/
 # Written by Gus
-# Modified by Ian Coberly 
+# Modified by Ian Coberly
+# Trigger Pin 18 Orange
+# Echo    Pin 16 White
 
 import RPi.GPIO as GPIO
 import time
@@ -10,7 +12,7 @@ GPIO.setmode(GPIO.BOARD)
 
 flag=0 #Flag is a Variable that it is used t
 PIN_TRIGGER = 18 #The trigger can be connected straight to the RasPi
-PIN_ECHO = 24 # The Echo needs a Voltage Divider in order to not damage the Raspi
+PIN_ECHO = 16 # The Echo needs a Voltage Divider in order to not damage the Raspi
 
 GPIO.setup(PIN_TRIGGER, GPIO.OUT) 
 GPIO.setup(PIN_ECHO, GPIO.IN)
