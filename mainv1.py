@@ -26,7 +26,7 @@ fPWM = 82 # Hz (50 soft PWM，limit the frequecies)
 button = 0 # button state
 reader = SimpleMFRC522() # RFID Reader
 flag=0  # Flag to enter the Readers loop
-
+text=("")
 
 def setup():
     global pwm
@@ -41,32 +41,46 @@ def startpump(button):
     duty = button*2
     pwm.ChangeDutyCycle(duty)
     #print ("direction =", direction, "-> duty =", duty)
-    time.sleep(1) #30 how much I want the program to stay in this phase
-    return  
+    time.sleep(3) #30 how much I want the program to stay in this phase
+    return (duty/2)
 
 def button_callback(channel):
-    print("Button was pushed by", text)
+
     button = GPIO.input(36)
-    print("flag1 button: ",button)
+    #print("flag1 button: ",button)
     startpump(button)
-    print ("HERE")
+    #print ("HERE",button)
+    while button<0:
+        loop()
     
-
-
-setup()
-
-####################
-while flag==0:
+def identifier():
     id, text = reader.read()
     print(id)
-    print(text)
+    print("Hello", text) 
     time.sleep(0.5)
+    return (text)
 
-    GPIO.setup(36, GPIO.IN, pull_up_down=GPIO.PUD_DOWN) # Set pin 36 to be an input pin and set initial value to be pulled low (off)
-        
-    GPIO.add_event_detect(36,GPIO.BOTH,callback=button_callback) # Setup event on pin 10 rising edge
+def loop():
     
-    print ("OUT")
+        text=identifier()
+        
+        GPIO.setup(36, GPIO.IN, pull_up_down=GPIO.PUD_DOWN) # Set pin 36 to be an input pin and set initial value to be pulled low (off)
+                 
+        GPIO.add_event_detect(36,GPIO.BOTH,callback=button_callback)# Setup event on pin 10 rising edge
+        
+        while (True):
+            try:
+                button_callback
+        
+            finally:
+                identifier()
+            
+                
+
+setup()
+loop()
+####################
+
 
 ###########################
 
@@ -79,5 +93,14 @@ message = input("Press enter to quit\n\n") # Run until someone presses enter
 
 GPIO.cleanup() # Clean up
 
+
+
+###################################################
+# NEXT STEPS
+#  Include the US Sensor
+#  Include the STOP button function
+#  Create the variables to safe the amount of liquids stored
+#  Measure the Volumen of liquid give in function of the time.
+#  Create the physical model
 
 
