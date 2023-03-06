@@ -5,8 +5,8 @@
 # Black = GND
 # Blue = Output
 
-# Input Pin 36 Blue button for Pump1 #########################
-# Input Pin 37 Blue button #########################
+# Input Pin 36 Blue button for Pump1 
+# Input Pin 37 Blue button 
 
 # VCC  Pin 17  3.3V
 # RST  Pin 22 Brown/Yellow
@@ -46,13 +46,15 @@ fPWM = 82 # Hz (50 soft PWM，limit the frequecies)
 button = 0 # button state
 reader = SimpleMFRC522() # RFID Reader
 
-channel=0
+channel=0 # This is a variable that will tell us which channel was activated according to which button was pressed.
+
 
 flag=0  # Flag to enter the Readers loop
 text=("")
 
 
 def setup():
+    #sets up the pumps
     global pwm1
     GPIO.setmode(GPIO.BOARD)
     GPIO.setup(P_SERVO1, GPIO.OUT) #setup P_SERVO as an output 
@@ -66,7 +68,8 @@ def setup():
     pwm2 = GPIO.PWM(P_SERVO2, fPWM) #setup P_SERVO as an PWM and its frequency
     pwm2.start(0)
     
-
+    
+    #sets up the ultrasonic transductors
     GPIO.setup(PIN_TRIGGER1, GPIO.OUT) 
     GPIO.setup(PIN_ECHO1, GPIO.IN)
     GPIO.output(PIN_TRIGGER1, GPIO.LOW)
@@ -77,13 +80,19 @@ def setup():
 
 def loop():
     
-        text=identifier()
+        text=identifier() #reads the ID in the RF tag
         
+        #sets up the buttons
         GPIO.setup(36, GPIO.IN, pull_up_down=GPIO.PUD_DOWN) # Set pin 36 to be an input pin and set initial value to be pulled low (off)
         GPIO.setup(37, GPIO.IN, pull_up_down=GPIO.PUD_DOWN) # Set pin 37 to be an input pin and set initial value to be pulled low (off)
+        
+        #its waiting for a change in state from a logical 0 to a 1
         GPIO.add_event_detect(36,GPIO.BOTH,callback=button_callback)# Setup event on pin 36 rising edge
         GPIO.add_event_detect(37,GPIO.BOTH,callback=button_callback)# Setup event on pin 37 rising edge
         
+        
+        #while no button has been pressed, the system will still look for an id to read.
+        #if a button is pressed the system activates
         while channel!=0:
                 button_callback
        
@@ -97,15 +106,23 @@ def loop():
 
 
 def button_callback(channel):
+    #Once this function is activated its task is create a new variable and call the startpump function
+    
     #Channel is the pin number that has been triggered
     #Button will become a boolean number
+    
+    
     button = GPIO.input(channel) 
     startpump(button,channel)
     
-           
+        
+        
+        
         
         
 def startpump(button,channel):
+    #this function will time how long the pump has been running and it will serve the liquid
+    
     t0= time.time()
     print("Serving Water")
     
@@ -127,16 +144,15 @@ def startpump(button,channel):
         pwm2.ChangeDutyCycle(duty2)
 
         ultrasonic2() # Prints the distance of the level of liquids in the tank
-        time.sleep(2) #30 how much I want the program to stay in this phase
+        time.sleep(2) #this is the amount of time how much I want the program to stay in this phase
         t1=time.time()
         duty2=0
         print("The pump was on ", t1-t0,"s")
         
         return (time.time())
 
-#################################################################
 
-#################################################################
+
 
 
 
@@ -165,6 +181,10 @@ def ultrasonic1():
       else: 
            print("Distance:",distance,"cm")
            
+           
+           
+           
+           
 def ultrasonic2():
     
       GPIO.output(PIN_TRIGGER2, GPIO.HIGH)
@@ -189,9 +209,12 @@ def ultrasonic2():
           
       else: 
            print("Distance:",distance,"cm")
+           
+           
+           
     
 def identifier():
-    id, text = reader.read()
+    id, text = reader.read() #reads the ID in the tag
     print(id)
     print("Hello", text) 
     time.sleep(0.5)
@@ -203,14 +226,23 @@ def identifier():
 
             
 
-#with Listener(pumpon=pumpon,pumpoff=pumpoff) as listener:
-#     listener.join()
-#Footer         
+     
            
-setup()
-loop()
+setup() #starts the program
+loop() # starts the loop
+
+
+
+#right now the program is always on its loop.
+#it doesnt exit
+
+
+
+
+
 
 print("Stop 1") #Program go here stop here
+
 ####################
 
 
@@ -227,16 +259,17 @@ GPIO.cleanup() # Clean up
 
 
 
+
+#THINGS TO KNOW AND WORK ON
+#1. The program doesnt close the loop
+#2. The program is not currently reading a second user in its interation this maybe a problem within the loop and where to place the identifier() function
+#3. The algorithm is monitoring how much time there is water coming out of the tanks but it is always equal to the time.sleep in the startpump function
+
+
 ###################################################
 # NEXT STEPS
-#  Include the US Sensor
 #  Include the STOP button function
+#  Find a better place to call the identifier funtion
 #  Create the variables to safe the amount of liquids stored
 #  Measure the Volumen of liquid give in function of the time.
-#  Create the physical model
-
-
-#Nodos 19 Raspi
-#Power supply Switch 4
-#PS US 4
-#PS Pump 4 
+#  Include an alarm that will sum up how much liquids has each user drank in that day
